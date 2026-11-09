@@ -197,6 +197,8 @@ impl Studio {
                 self.transition_selected = None;
                 self.inspector_jump = (self.inspector_jump.0 + 1, "Video", "Enhance");
             }
+            "detect-beats" => self.detect_beats(&clip),
+            "clear-beats" => self.clear_beats(&clip),
             "export-audio" => self.export_clip_audio(id),
             "detach" => self.detach_audio(&clip),
             "reattach" => {

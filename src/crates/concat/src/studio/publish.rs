@@ -206,6 +206,7 @@ impl Studio {
                             .map(|text| text.content.as_str())
                             .unwrap_or_default()
                             .into(),
+                        beat_path: self.beat_path(clip, span),
                         wave: wave.0,
                         wave_from: wave.1,
                         wave_span: wave.2,

@@ -49,6 +49,7 @@ mod consolidate;
 use consolidate::MergeJob;
 mod masking;
 use masking::{MaskFrame, MaskGrip};
+mod beats;
 mod bin;
 mod chains;
 mod edit;
@@ -946,6 +947,7 @@ pub struct Studio {
     pub media: crate::panes::media_bin::MediaBin,
     /// Decoded art by media id, and the ids a worker is decoding for.
     pub peaks: HashMap<String, Arc<Pyramid>>,
+    beats: beats::Beats,
     /// Filmstrips by media id: the picture, how many frames are in it, one
     /// frame's width and the strip's height, in the picture's own pixels.
     pub strips: HashMap<String, Strip>,
@@ -2578,6 +2580,7 @@ impl Studio {
             autosave: slint::Timer::default(),
             media: crate::panes::media_bin::MediaBin::default(),
             peaks: HashMap::new(),
+            beats: beats::Beats::default(),
             strips: HashMap::new(),
             windows: HashMap::new(),
             art_pending: HashSet::new(),

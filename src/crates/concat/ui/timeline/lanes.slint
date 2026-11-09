@@ -436,7 +436,17 @@ component Clip inherits Rectangle {
             ramp-h: root.fade-h;
         }
 
-
+        if root.item.beat-path != "": Path {
+            x: 0;
+            y: parent.height - self.height;
+            width: parent.width;
+            height: Math.min(9px, parent.height);
+            commands: root.item.beat-path;
+            viewbox-width: 1;
+            viewbox-height: 1;
+            fit: fill;
+            fill: #ffc84a;
+        }
     }
 
     // ── header ───────────────────────────────────────────────────────────

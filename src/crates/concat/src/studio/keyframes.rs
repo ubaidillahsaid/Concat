@@ -2023,6 +2023,25 @@ impl Studio {
             ));
             rows.push(rule());
         }
+        if let Some((pending, detected)) = self.beat_menu_state(clip) {
+            rows.push(action(
+                "detect-beats",
+                t("studio.detectBeats"),
+                Glyph::Waveform,
+                "",
+                !pending,
+            ));
+            if detected {
+                rows.push(action(
+                    "clear-beats",
+                    t("studio.clearBeats"),
+                    Glyph::None,
+                    "",
+                    !pending,
+                ));
+            }
+            rows.push(rule());
+        }
         let audible = clip.kind != model::ClipKind::Image;
         rows.push(check(
             "mute",

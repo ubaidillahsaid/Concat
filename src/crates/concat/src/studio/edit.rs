@@ -55,6 +55,7 @@ impl Studio {
     /// art to the last one's until the app quit.
     pub(super) fn forget_art(&mut self) {
         self.peaks.clear();
+        self.beats = Default::default();
         self.strips.clear();
         self.windows.clear();
         self.art_pending.clear();
@@ -244,12 +245,15 @@ impl Studio {
             return 0.0;
         }
         let mut targets = vec![0.0, self.playhead];
+        let left = edges.iter().copied().fold(f32::INFINITY, f32::min) - threshold;
+        let right = edges.iter().copied().fold(f32::NEG_INFINITY, f32::max) + threshold;
         for clip in &self.timeline().clips {
             if moving.contains(&clip.id.as_str()) {
                 continue;
             }
             targets.push(clip.start as f32);
             targets.push((clip.start + clip.duration) as f32);
+            targets.extend(self.beat_times(clip, Some((left, right))));
         }
         let mut best = 0.0;
         let mut best_distance = threshold;
@@ -286,6 +290,9 @@ impl Studio {
             }
             consider(clip.start as f32);
             consider((clip.start + clip.duration) as f32);
+            for beat in self.beat_times(clip, Some((time - threshold, time + threshold))) {
+                consider(beat);
+            }
         }
         best
     }
