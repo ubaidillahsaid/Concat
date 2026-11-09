@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} — не шрифт, який може прочитати Concat",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "Відкрити проєкт…",
   "studio.parkPlayheadInsideClip": "Поставте курсор відтворення всередину кліпу, щоб розрізати його там",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

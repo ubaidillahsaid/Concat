@@ -124,7 +124,7 @@ pub(super) fn apply(
             boundaries,
         } => {
             if media_ids.is_empty()
-                || boundaries.len() < 2
+                || boundaries.len() != media_ids.len() + 1
                 || boundaries[0] < 0.0
                 || boundaries
                     .windows(2)
@@ -145,7 +145,7 @@ pub(super) fn apply(
             let timeline = project.active_mut();
             let track_id = fresh_track(timeline, mint);
             let mut first = None;
-            for (span, media) in boundaries.windows(2).zip(items.iter().cycle()) {
+            for (span, media) in boundaries.windows(2).zip(&items) {
                 let id = mint.next("c");
                 let mut clip = default_clip(id.clone(), track_id.clone(), media, span[0]);
                 clip.duration = span[1] - span[0];

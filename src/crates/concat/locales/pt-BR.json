@@ -755,6 +755,7 @@
   "studio.newTitle": "Novo título",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} não é uma fonte que o Concat consiga ler",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "Abrir projeto…",
   "studio.parkPlayheadInsideClip": "Coloque o cursor dentro do clipe para cortá-lo ali",
   "studio.parkPlayheadToFreeze": "Coloque o cursor dentro de um clipe de imagem para congelar",

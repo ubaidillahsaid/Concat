@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} ไม่ใช่ฟอนต์ที่ Concat อ่านได้",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "เปิดโปรเจกต์…",
   "studio.parkPlayheadInsideClip": "วางหัวเล่นไว้ภายในคลิปเพื่อตัดตรงนั้น",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

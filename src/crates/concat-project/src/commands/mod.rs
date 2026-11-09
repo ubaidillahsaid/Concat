@@ -347,11 +347,11 @@ pub enum Command {
         #[serde(default)]
         ripple: bool,
     },
-    /// Lays stills end to end on a new top track, cycling the media list.
+    /// Lays each still once, end to end on a new top track.
     AddStillsAtCuts {
         /// Images in playback order.
         media_ids: Vec<String>,
-        /// Increasing timeline times, including the start and final end.
+        /// Increasing timeline times, one more than the number of stills.
         boundaries: Vec<f64>,
     },
     /// Places a title: a clip with no media behind it, named after the

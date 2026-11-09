@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0}은(는) Concat이 읽을 수 있는 글꼴이 아닙니다",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "Open project…",
   "studio.parkPlayheadInsideClip": "그 위치에서 자르려면 재생 헤드를 클립 안에 두세요",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} ऐसा फ़ॉन्ट नहीं है जिसे Concat पढ़ सके",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "प्रोजेक्ट खोलें…",
   "studio.parkPlayheadInsideClip": "क्लिप को वहीं काटने के लिए प्लेहेड को उसके अंदर रखें",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} 不是 Concat 能讀取的字型",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "打開專案…",
   "studio.parkPlayheadInsideClip": "請將播放磁頭放在片段內，才能在該處切開",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

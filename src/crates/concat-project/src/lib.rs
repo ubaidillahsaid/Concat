@@ -4929,7 +4929,7 @@ mod tests {
     }
 
     #[test]
-    fn stills_at_cuts_cycle_on_a_new_top_track_and_undo_together() {
+    fn stills_at_cuts_use_each_image_once_and_undo_together() {
         let (mut editor, video_id, _) = fixture();
         let mut add_still = |path| {
             let Command::AddMedia { mut item } = media(path, 10.0, false) else {
@@ -4945,6 +4945,7 @@ mod tests {
         };
         let a = add_still("/a.jpg");
         let b = add_still("/b.jpg");
+        let c = add_still("/c.jpg");
         let before = editor.project().active().clone();
         assert!(
             editor
@@ -4957,9 +4958,20 @@ mod tests {
         assert_eq!(editor.project().active().tracks.len(), before.tracks.len());
         assert_eq!(editor.project().active().clips.len(), before.clips.len());
 
+        assert!(
+            editor
+                .apply(Command::AddStillsAtCuts {
+                    media_ids: vec![a.clone(), b.clone(), c.clone()],
+                    boundaries: vec![3.0, 3.25, 3.75, 4.0, 4.25],
+                })
+                .is_err()
+        );
+        assert_eq!(editor.project().active().tracks.len(), before.tracks.len());
+        assert_eq!(editor.project().active().clips.len(), before.clips.len());
+
         editor
             .apply(Command::AddStillsAtCuts {
-                media_ids: vec![a.clone(), b.clone()],
+                media_ids: vec![a.clone(), b.clone(), c.clone()],
                 boundaries: vec![3.0, 3.25, 3.75, 4.0],
             })
             .unwrap();
@@ -4977,7 +4989,7 @@ mod tests {
             vec![
                 (a.as_str(), 3.0, 0.25),
                 (b.as_str(), 3.25, 0.5),
-                (a.as_str(), 3.75, 0.25)
+                (c.as_str(), 3.75, 0.25)
             ]
         );
         assert!(editor.undo());

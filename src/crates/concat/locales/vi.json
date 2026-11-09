@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} không phải phông chữ mà Concat có thể đọc",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "Mở dự án…",
   "studio.parkPlayheadInsideClip": "Đặt đầu phát vào trong clip để cắt tại vị trí đó",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

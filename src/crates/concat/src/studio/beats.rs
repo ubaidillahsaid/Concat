@@ -87,7 +87,7 @@ impl Studio {
     }
 
     pub(super) fn has_selected_stills(&self) -> bool {
-        self.selected_still_ids().nth(1).is_some()
+        self.selected_still_ids().next().is_some()
     }
 
     pub(super) fn sync_stills_to_beats(&mut self, audio: &Clip) {
@@ -98,7 +98,7 @@ impl Studio {
             .selected_still_ids()
             .map(str::to_owned)
             .collect::<Vec<_>>();
-        if media_ids.len() < 2 {
+        if media_ids.is_empty() {
             return;
         }
         let rate = self.timeline().video.rate();
@@ -111,13 +111,19 @@ impl Studio {
             if cut - previous >= min_span - 1e-9 && end - cut >= min_span - 1e-9 {
                 boundaries.push(cut);
                 previous = cut;
+                // The beat after the last photo ends the sequence.
+                if boundaries.len() > media_ids.len() {
+                    break;
+                }
             }
         }
-        if boundaries.len() < 2 {
-            self.notify(&t("studio.noBeatsFound"), false);
+        if boundaries.len() < media_ids.len() {
+            self.notify(&t("studio.notEnoughBeatsForPhotos"), true);
             return;
         }
-        boundaries.push(end);
+        if boundaries.len() == media_ids.len() {
+            boundaries.push(end);
+        }
         if let Some(id) = self.apply(Command::AddStillsAtCuts {
             media_ids,
             boundaries,

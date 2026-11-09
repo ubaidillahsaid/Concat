@@ -755,6 +755,7 @@
   "studio.newTitle": "New title",
   "studio.noBeatsFound": "Tidak ada ketukan yang terdeteksi.",
   "studio.notAFont": "{0} bukan font yang dapat dibaca Concat",
+  "studio.notEnoughBeatsForPhotos": "Ketukan pada klip musik kurang untuk menempatkan semua foto.",
   "studio.openProject": "Buka proyek…",
   "studio.parkPlayheadInsideClip": "Letakkan penanda putar di dalam klip untuk memotongnya di titik itu",
   "studio.parkPlayheadToFreeze": "Park the playhead inside a picture clip to freeze",

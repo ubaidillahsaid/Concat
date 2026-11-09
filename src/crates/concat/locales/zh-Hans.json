@@ -755,6 +755,7 @@
   "studio.newTitle": "新建标题",
   "studio.noBeatsFound": "No clear beats found.",
   "studio.notAFont": "{0} 不是 Concat 能读取的字体",
+  "studio.notEnoughBeatsForPhotos": "There are not enough beats in this audio clip for all the selected photos.",
   "studio.openProject": "打开项目…",
   "studio.parkPlayheadInsideClip": "请将播放头放在片段内，才能在该处切开",
   "studio.parkPlayheadToFreeze": "把播放头停在图片片段内即可定格",
