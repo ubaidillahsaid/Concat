@@ -2033,6 +2033,13 @@ impl Studio {
             ));
             if detected {
                 rows.push(action(
+                    "sync-stills-to-beats",
+                    t("studio.syncStillsToBeats"),
+                    Glyph::Waveform,
+                    "",
+                    !pending && self.has_selected_stills(),
+                ));
+                rows.push(action(
                     "clear-beats",
                     t("studio.clearBeats"),
                     Glyph::None,

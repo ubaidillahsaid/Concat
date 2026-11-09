@@ -796,6 +796,7 @@
   "studio.stabilize": "স্থির করুন: {0}",
   "studio.stabilizeSkipped": "একটি ক্লিপের কাঁপুনি মাপার সময় Concat বন্ধ হয়ে গিয়েছিল, তাই সেটির স্থিরকরণ বাদ দিয়ে প্রজেক্ট খোলা হচ্ছে। আবার চেষ্টা করতে স্থির করুন বন্ধ করে আবার চালু করুন।",
   "studio.stereo": "স্টেরিও",
+  "studio.syncStillsToBeats": "Sync Photos to Beats",
   "studio.textToSpeech": "টেক্সট টু স্পিচ…",
   "studio.timelineNowHdr": "{0} এখন HDR (HLG), এর প্রথম HDR ক্লিপের জন্য। মডিফাই দিয়ে ফিরিয়ে নেওয়া যাবে।",
   "studio.track": "ট্র্যাক {0}",

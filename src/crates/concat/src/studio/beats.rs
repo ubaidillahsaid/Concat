@@ -3,7 +3,6 @@
 
 use super::*;
 use concat_media::{AudioDecoder, AudioOptions};
-use std::fmt::Write;
 
 #[path = "beat_detector.rs"]
 mod detector;
@@ -77,6 +76,57 @@ impl Studio {
         }
     }
 
+    fn selected_still_ids(&self) -> impl Iterator<Item = &str> {
+        self.project()
+            .media
+            .iter()
+            .filter(|item| {
+                item.kind == model::MediaKind::Image && self.media.selected.contains(&item.id)
+            })
+            .map(|item| item.id.as_str())
+    }
+
+    pub(super) fn has_selected_stills(&self) -> bool {
+        self.selected_still_ids().nth(1).is_some()
+    }
+
+    pub(super) fn sync_stills_to_beats(&mut self, audio: &Clip) {
+        if self.beat_menu_state(audio) != Some((false, true)) {
+            return;
+        }
+        let media_ids = self
+            .selected_still_ids()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        if media_ids.len() < 2 {
+            return;
+        }
+        let rate = self.timeline().video.rate();
+        let min_span = (1.0 / rate).max(model::ranges::MIN_CLIP_DURATION);
+        let end = audio.start + audio.duration;
+        let mut previous = audio.start;
+        let mut boundaries = vec![previous];
+        for beat in self.beat_times(audio, None) {
+            let cut = (f64::from(beat) * rate).round() / rate;
+            if cut - previous >= min_span - 1e-9 && end - cut >= min_span - 1e-9 {
+                boundaries.push(cut);
+                previous = cut;
+            }
+        }
+        if boundaries.len() < 2 {
+            self.notify(&t("studio.noBeatsFound"), false);
+            return;
+        }
+        boundaries.push(end);
+        if let Some(id) = self.apply(Command::AddStillsAtCuts {
+            media_ids,
+            boundaries,
+        }) {
+            self.selection = vec![id];
+            self.transition_selected = None;
+        }
+    }
+
     /// Each hit belongs to the recording. Trims, splits and retiming show
     /// the part of that recording the clip actually uses.
     pub(super) fn beat_times(
@@ -136,24 +186,21 @@ impl Studio {
         })
     }
 
-    pub(super) fn beat_path(&self, clip: &Clip, span: Option<(f32, f32)>) -> SharedString {
+    /// Marker positions as fractions of the clip width. At wide zoom
+    /// levels only draw marks with room for a dot; all beats still snap.
+    pub(super) fn beat_markers(&self, clip: &Clip, span: Option<(f32, f32)>) -> Vec<f32> {
         let start = clip.start as f32;
         let duration = clip.duration as f32;
-        let pixel = self.lanes.seconds_per_pixel;
-        let mut path = String::new();
+        let spacing = 10.0 * self.lanes.seconds_per_pixel;
+        let mut markers = Vec::new();
         let mut last = f32::NEG_INFINITY;
         for time in self.beat_times(clip, span) {
-            if time - last < 4.0 * pixel {
-                continue;
+            if time - last >= spacing {
+                markers.push((time - start) / duration);
+                last = time;
             }
-            let x = (time - start) / duration;
-            let width = pixel / duration;
-            let from = (x - width).max(0.0);
-            let to = (x + width).min(1.0);
-            let _ = write!(path, "M{from:.7},1 L{x:.7},0 L{to:.7},1 Z ");
-            last = time;
         }
-        path.into()
+        markers
     }
 }
 

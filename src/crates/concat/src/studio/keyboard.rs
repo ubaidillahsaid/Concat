@@ -199,6 +199,7 @@ impl Studio {
             }
             "detect-beats" => self.detect_beats(&clip),
             "clear-beats" => self.clear_beats(&clip),
+            "sync-stills-to-beats" => self.sync_stills_to_beats(&clip),
             "export-audio" => self.export_clip_audio(id),
             "detach" => self.detach_audio(&clip),
             "reattach" => {

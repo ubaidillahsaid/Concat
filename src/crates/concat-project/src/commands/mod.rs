@@ -347,6 +347,13 @@ pub enum Command {
         #[serde(default)]
         ripple: bool,
     },
+    /// Lays stills end to end on a new top track, cycling the media list.
+    AddStillsAtCuts {
+        /// Images in playback order.
+        media_ids: Vec<String>,
+        /// Increasing timeline times, including the start and final end.
+        boundaries: Vec<f64>,
+    },
     /// Places a title: a clip with no media behind it, named after the
     /// text's first line, minting a "c" id.
     AddTextClip {
@@ -969,6 +976,9 @@ pub enum CommandError {
     /// A clip-placing command named media no longer in the bin.
     #[error("That media is no longer in the bin.")]
     MediaGone,
+    /// A timed still sequence needs images and increasing cut times.
+    #[error("The photo sequence needs images and valid cut times.")]
+    InvalidStillSequence,
     /// A clip-placing command named a track no longer on the timeline.
     #[error("That track no longer exists.")]
     TrackGone,
@@ -1114,6 +1124,7 @@ impl Command {
             Command::AddClip { start, .. }
             | Command::AddClipAtFirstFree { start, .. }
             | Command::AddClipsInSequence { start, .. } => bad([*start]),
+            Command::AddStillsAtCuts { boundaries, .. } => bad(boundaries.iter().copied()),
             Command::AddShapeClip {
                 start,
                 duration,
@@ -1315,6 +1326,7 @@ pub fn apply(
         command @ (Command::AddClip { .. }
         | Command::AddClipAtFirstFree { .. }
         | Command::AddClipsInSequence { .. }
+        | Command::AddStillsAtCuts { .. }
         | Command::AddTextClip { .. }
         | Command::AddShapeClip { .. }
         | Command::AddLayerClip { .. }

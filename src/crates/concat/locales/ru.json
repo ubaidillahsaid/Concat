@@ -796,6 +796,7 @@
   "studio.stabilize": "Стабилизация: {0}",
   "studio.stabilizeSkipped": "Concat закрылся во время измерения дрожания клипа, поэтому его стабилизация пропущена, а проект открывается. Выключите и снова включите Стабилизацию, чтобы повторить.",
   "studio.stereo": "стерео",
+  "studio.syncStillsToBeats": "Sync Photos to Beats",
   "studio.textToSpeech": "Озвучивание текста…",
   "studio.timelineNowHdr": "{0} теперь HDR (HLG) — из-за первого HDR-клипа. Вернуть можно в «Изменить».",
   "studio.track": "Дорожка {0}",

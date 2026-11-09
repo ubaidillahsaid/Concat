@@ -4929,6 +4929,63 @@ mod tests {
     }
 
     #[test]
+    fn stills_at_cuts_cycle_on_a_new_top_track_and_undo_together() {
+        let (mut editor, video_id, _) = fixture();
+        let mut add_still = |path| {
+            let Command::AddMedia { mut item } = media(path, 10.0, false) else {
+                unreachable!();
+            };
+            item.kind = MediaKind::Image;
+            item.duration = None;
+            editor
+                .apply(Command::AddMedia { item })
+                .unwrap()
+                .created_id
+                .unwrap()
+        };
+        let a = add_still("/a.jpg");
+        let b = add_still("/b.jpg");
+        let before = editor.project().active().clone();
+        assert!(
+            editor
+                .apply(Command::AddStillsAtCuts {
+                    media_ids: vec![a.clone(), video_id],
+                    boundaries: vec![3.0, 3.25, 4.0],
+                })
+                .is_err()
+        );
+        assert_eq!(editor.project().active().tracks.len(), before.tracks.len());
+        assert_eq!(editor.project().active().clips.len(), before.clips.len());
+
+        editor
+            .apply(Command::AddStillsAtCuts {
+                media_ids: vec![a.clone(), b.clone()],
+                boundaries: vec![3.0, 3.25, 3.75, 4.0],
+            })
+            .unwrap();
+        let timeline = editor.project().active();
+        assert_eq!(timeline.tracks.len(), before.tracks.len() + 1);
+        let track = timeline.tracks.last().unwrap();
+        let timings = timeline
+            .clips
+            .iter()
+            .filter(|clip| clip.track_id == track.id)
+            .map(|clip| (clip.media_id.as_str(), clip.start, clip.duration))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            timings,
+            vec![
+                (a.as_str(), 3.0, 0.25),
+                (b.as_str(), 3.25, 0.5),
+                (a.as_str(), 3.75, 0.25)
+            ]
+        );
+        assert!(editor.undo());
+        assert_eq!(editor.project().active().tracks.len(), before.tracks.len());
+        assert_eq!(editor.project().active().clips.len(), before.clips.len());
+    }
+
+    #[test]
     fn add_at_first_free_takes_the_lowest_empty_lane_or_opens_one() {
         let (mut editor, media_id, _) = fixture();
         // Track one is occupied for [0, 10), so the same span lands on two.

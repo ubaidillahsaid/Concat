@@ -436,16 +436,38 @@ component Clip inherits Rectangle {
             ramp-h: root.fade-h;
         }
 
-        if root.item.beat-path != "": Path {
-            x: 0;
-            y: parent.height - self.height;
-            width: parent.width;
-            height: Math.min(9px, parent.height);
-            commands: root.item.beat-path;
-            viewbox-width: 1;
-            viewbox-height: 1;
-            fit: fill;
-            fill: #ffc84a;
+        // Place the dots just below the clip name so they remain visible
+        // even when the bottom of the audio lane is below the viewport.
+        for beat in root.item.beat-markers: Rectangle {
+            x: beat * parent.width - self.width / 2;
+            y: 0;
+            width: 9px;
+            height: parent.height;
+
+            Rectangle {
+                x: (parent.width - self.width) / 2;
+                y: 4px;
+                width: 4px;
+                height: Math.max(0px, parent.height - 4px);
+                background: #1b160f;
+            }
+            Rectangle {
+                x: (parent.width - self.width) / 2;
+                y: 4px;
+                width: 2px;
+                height: Math.max(0px, parent.height - 4px);
+                background: #ffd84d;
+            }
+            Rectangle {
+                x: 0;
+                y: 1px;
+                width: 9px;
+                height: 9px;
+                border-radius: 5px;
+                border-width: 1px;
+                border-color: #1b160f;
+                background: #ffd84d;
+            }
         }
     }
 

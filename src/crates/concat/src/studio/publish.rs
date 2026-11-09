@@ -173,13 +173,24 @@ impl Studio {
                         clip.duration as f32,
                     )
                 })
-                .map(|clip| {
+                .enumerate()
+                .map(|(row, clip)| {
                     let wave =
                         if matches!(clip.kind, model::ClipKind::Audio | model::ClipKind::Video) {
                             self.wave(clip)
                         } else {
                             Default::default()
                         };
+                    let markers = self.beat_markers(clip, span);
+                    let beat_markers = match models.clips.row_data(row) {
+                        Some(previous)
+                            if previous.beat_markers.iter().eq(markers.iter().copied()) =>
+                        {
+                            previous.beat_markers
+                        }
+                        _ if markers.is_empty() => ModelRc::default(),
+                        _ => ModelRc::new(VecModel::from(markers)),
+                    };
                     ClipData {
                         id: clip.id.as_str().into(),
                         name: clip.name.as_str().into(),
@@ -206,7 +217,7 @@ impl Studio {
                             .map(|text| text.content.as_str())
                             .unwrap_or_default()
                             .into(),
-                        beat_path: self.beat_path(clip, span),
+                        beat_markers,
                         wave: wave.0,
                         wave_from: wave.1,
                         wave_span: wave.2,

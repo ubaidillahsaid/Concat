@@ -796,6 +796,7 @@
   "studio.stabilize": "Stabilləşdirmə: {0}",
   "studio.stabilizeSkipped": "Concat klipin titrəməsini ölçərkən bağlandı, ona görə onun stabilləşdirilməsi buraxıldı və layihə açılır. Yenidən cəhd etmək üçün Stabilləşdir seçimini söndürüb yenidən yandırın.",
   "studio.stereo": "stereo",
+  "studio.syncStillsToBeats": "Sync Photos to Beats",
   "studio.textToSpeech": "Mətndən nitqə…",
   "studio.timelineNowHdr": "{0} ilk HDR klipinə görə artıq HDR-dir (HLG). Dəyiş bölməsindən onu geri qaytarmaq olar.",
   "studio.track": "Trek {0}",

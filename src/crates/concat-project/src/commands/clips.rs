@@ -119,6 +119,45 @@ pub(super) fn apply(
             })
         }
 
+        Command::AddStillsAtCuts {
+            media_ids,
+            boundaries,
+        } => {
+            if media_ids.is_empty()
+                || boundaries.len() < 2
+                || boundaries[0] < 0.0
+                || boundaries
+                    .windows(2)
+                    .any(|pair| pair[1] - pair[0] < MIN_CLIP_DURATION - 1e-9)
+            {
+                return Err(CommandError::InvalidStillSequence);
+            }
+            let items = media_ids
+                .iter()
+                .map(|id| {
+                    let item = project.media_by_id(id).ok_or(CommandError::MediaGone)?;
+                    if item.kind != MediaKind::Image {
+                        return Err(CommandError::InvalidStillSequence);
+                    }
+                    Ok(item.clone())
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            let timeline = project.active_mut();
+            let track_id = fresh_track(timeline, mint);
+            let mut first = None;
+            for (span, media) in boundaries.windows(2).zip(items.iter().cycle()) {
+                let id = mint.next("c");
+                let mut clip = default_clip(id.clone(), track_id.clone(), media, span[0]);
+                clip.duration = span[1] - span[0];
+                timeline.clips.push(Arc::new(clip));
+                first.get_or_insert(id);
+            }
+            Ok(Outcome {
+                created_id: first,
+                applied: true,
+            })
+        }
+
         Command::AddTextClip {
             track_id,
             start,
