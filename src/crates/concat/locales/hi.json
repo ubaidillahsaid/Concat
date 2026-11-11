@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "चुने गए को टाइमलाइन में जोड़ें",
   "studio.audioExported": "ऑडियो {0} में एक्सपोर्ट हुआ और मीडिया में जोड़ा गया",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} चैनल",
   "studio.clearBeats": "Clear Beat Markers",

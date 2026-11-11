@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "افزودن موارد انتخاب‌شده به تایم‌لاین",
   "studio.audioExported": "صدا در {0} ذخیره و به رسانه‌ها افزوده شد",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} کانال",
   "studio.clearBeats": "Clear Beat Markers",

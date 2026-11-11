@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Dodaj odabrano na vremensku liniju",
   "studio.audioExported": "Zvuk izvezen u {0} i dodan u Medije",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} kanala",
   "studio.clearBeats": "Clear Beat Markers",

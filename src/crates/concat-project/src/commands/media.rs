@@ -68,6 +68,70 @@ pub(super) fn apply(
             })
         }
 
+        Command::SetMediaBeatMarkers {
+            media_id,
+            stream,
+            mut times,
+        } => {
+            let media = project
+                .media
+                .iter_mut()
+                .find(|item| item.id == media_id)
+                .ok_or(CommandError::MediaGone)?;
+            if let Some(times) = &mut times {
+                if times.iter().any(|time| *time < 0.0) {
+                    return Err(CommandError::InvalidBeatMarker);
+                }
+                times.sort_by(f64::total_cmp);
+                times.dedup();
+            }
+            let applied = media.beat_markers(stream) != times;
+            if applied {
+                media.set_beat_markers(stream, times);
+            }
+            Ok(Outcome {
+                created_id: None,
+                applied,
+            })
+        }
+
+        Command::EditMediaBeatMarker {
+            media_id,
+            stream,
+            from,
+            to,
+        } => {
+            let media = project
+                .media
+                .iter_mut()
+                .find(|item| item.id == media_id)
+                .ok_or(CommandError::MediaGone)?;
+            let Some(mut times) = media.beat_markers(stream) else {
+                return Ok(Outcome::default());
+            };
+            let Ok(index) = times.binary_search_by(|time| time.total_cmp(&from)) else {
+                // A stale drag after undo or re-detection cannot edit another marker.
+                return Ok(Outcome::default());
+            };
+            if to == Some(from) {
+                return Ok(Outcome::default());
+            }
+            if let Some(to) = to {
+                if to < 0.0 || times.binary_search_by(|time| time.total_cmp(&to)).is_ok() {
+                    return Err(CommandError::InvalidBeatMarker);
+                }
+                times[index] = to;
+                times.sort_by(f64::total_cmp);
+            } else {
+                times.remove(index);
+            }
+            media.set_beat_markers(stream, Some(times));
+            Ok(Outcome {
+                created_id: None,
+                applied: true,
+            })
+        }
+
         Command::SetMediaPlaceholder {
             media_id,
             placeholder,
@@ -95,6 +159,7 @@ pub(super) fn apply(
 
             // The slot keeps its id, so every clip that references it keeps
             // working; only the identity behind the id changes.
+            media.extra.remove("audioBeatMarkers");
             media.path = item.path;
             media.name = item.name.clone();
             media.duration = item.duration;

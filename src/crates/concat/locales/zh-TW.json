@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "將所選內容加入時間軸",
   "studio.audioExported": "音訊已匯出到 {0}，並已加入媒體",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} 個聲道",
   "studio.clearBeats": "Clear Beat Markers",

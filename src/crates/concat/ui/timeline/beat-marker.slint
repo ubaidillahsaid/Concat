@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// A beat handle owns its drag until release, so moving it is one undo step.
+import { Tip } from "../primitives/tooltip.slint";
+import { I18n } from "../i18n.slint";
+
+export component BeatMarker inherits Rectangle {
+    in property <float> at;
+    in property <length> clip-width;
+    in property <bool> editable: true;
+    callback edited(at: float, remove: bool);
+
+    property <bool> dragging;
+    property <length> origin-x;
+    property <float> drag-at;
+    property <float> shown-at: root.dragging ? root.drag-at : root.at;
+
+    x: root.shown-at * root.clip-width - self.width / 2;
+    width: 12px;
+
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: 5px;
+        width: 3px;
+        height: Math.max(0px, parent.height - 5px);
+        background: #1b160f;
+    }
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: 5px;
+        width: 1px;
+        height: Math.max(0px, parent.height - 5px);
+        background: #ffd84d;
+    }
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: 1px;
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+        border-width: focus.has-focus ? 2px : 1px;
+        border-color: focus.has-focus ? Colors.white : #1b160f;
+        background: root.dragging ? Colors.white : #ffd84d;
+    }
+
+    focus := FocusScope {
+        key-pressed(event) => {
+            if (root.editable && (event.text == Key.Delete || event.text == Key.Backspace)) {
+                root.edited(root.at, true);
+                return accept;
+            }
+            if (event.text == Key.Escape && root.dragging) {
+                root.dragging = false;
+                return accept;
+            }
+            return reject;
+        }
+    }
+
+    handle := TouchArea {
+        x: 0;
+        y: 0;
+        width: parent.width;
+        height: Math.min(14px, parent.height);
+        enabled: root.editable;
+        mouse-cursor: MouseCursor.ew-resize;
+
+        pointer-event(event) => {
+            if (event.button == PointerEventButton.right) {
+                if (event.kind == PointerEventKind.up) {
+                    root.dragging = false;
+                    root.edited(root.at, true);
+                }
+                return;
+            }
+            if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                focus.focus();
+                root.origin-x = self.absolute-position.x + self.mouse-x;
+                root.drag-at = root.at;
+                root.dragging = true;
+            } else if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                let changed = Math.abs((root.drag-at - root.at) * root.clip-width) > 2px;
+                let commit = root.dragging && changed && event.kind == PointerEventKind.up;
+                let destination = root.drag-at;
+                root.dragging = false;
+                if (commit) { root.edited(destination, false); }
+            }
+        }
+        moved => {
+            if (root.dragging && root.clip-width > 0px) {
+                let delta = self.absolute-position.x + self.mouse-x - root.origin-x;
+                root.drag-at = Math.clamp(root.at + delta / root.clip-width, 0, 1);
+            }
+        }
+
+        Tip {
+            active: handle.has-hover && !root.dragging;
+            text: I18n.t("studio.beatMarkerTip");
+        }
+    }
+}

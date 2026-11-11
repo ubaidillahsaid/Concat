@@ -1185,6 +1185,11 @@ fn start(project: Option<std::path::PathBuf>, smoke: bool) -> Result<(), slint::
                                    seconds: f32| {
         state.clip_fade(&id, out, seconds);
     }));
+    editor.on_beat_edited(on_window!(
+        |state, id: SharedString, source_time: SharedString, seconds: f32, remove: bool| {
+            state.edit_beat_marker(&id, &source_time, seconds, remove);
+        }
+    ));
     editor.on_save_frame(on_window!(|state| {
         state.save_frame_as();
     }));

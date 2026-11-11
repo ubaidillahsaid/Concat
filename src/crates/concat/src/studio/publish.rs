@@ -184,7 +184,7 @@ impl Studio {
                     let markers = self.beat_markers(clip, span);
                     let beat_markers = match models.clips.row_data(row) {
                         Some(previous)
-                            if previous.beat_markers.iter().eq(markers.iter().copied()) =>
+                            if previous.beat_markers.iter().eq(markers.iter().cloned()) =>
                         {
                             previous.beat_markers
                         }

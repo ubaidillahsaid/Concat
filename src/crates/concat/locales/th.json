@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "เพิ่มรายการที่เลือกลงไทม์ไลน์",
   "studio.audioExported": "ส่งออกเสียงไปที่ {0} และเพิ่มลงในสื่อแล้ว",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} ช่อง",
   "studio.clearBeats": "Clear Beat Markers",

@@ -2959,6 +2959,47 @@ impl Project {
 }
 
 impl MediaItem {
+    /// Detected or edited source seconds, saved per audio stream. Missing
+    /// means detection has not run; an empty list means all marks were deleted.
+    pub fn beat_markers(&self, stream: Option<u32>) -> Option<Vec<f64>> {
+        let key = stream.map_or_else(|| "default".to_owned(), |index| index.to_string());
+        let values = self.extra.get("audioBeatMarkers")?.get(&key)?.as_array()?;
+        let mut times = values
+            .iter()
+            .map(Value::as_f64)
+            .collect::<Option<Vec<_>>>()?;
+        if times.iter().any(|time| !time.is_finite() || *time < 0.0) {
+            return None;
+        }
+        times.sort_by(f64::total_cmp);
+        times.dedup();
+        Some(times)
+    }
+
+    pub(crate) fn set_beat_markers(&mut self, stream: Option<u32>, times: Option<Vec<f64>>) {
+        let key = stream.map_or_else(|| "default".to_owned(), |index| index.to_string());
+        let mut streams = self
+            .extra
+            .get("audioBeatMarkers")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        if let Some(times) = times {
+            streams.insert(
+                key,
+                Value::Array(times.into_iter().map(Value::from).collect()),
+            );
+        } else {
+            streams.remove(&key);
+        }
+        if streams.is_empty() {
+            self.extra.remove("audioBeatMarkers");
+        } else {
+            self.extra
+                .insert("audioBeatMarkers".to_owned(), Value::Object(streams));
+        }
+    }
+
     /// A nameless entry is called by its path.
     pub fn tidy(mut self) -> MediaItem {
         if self.name.is_empty() {

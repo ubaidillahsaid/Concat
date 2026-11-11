@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "選択項目をタイムラインに追加",
   "studio.audioExported": "音声を {0} に書き出し、メディアに追加しました",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} チャンネル",
   "studio.clearBeats": "Clear Beat Markers",

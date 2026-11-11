@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Dodaj zaznaczone do osi czasu",
   "studio.audioExported": "Dźwięk wyeksportowano do {0} i dodano do Multimediów",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "Kanały: {0}",
   "studio.clearBeats": "Clear Beat Markers",

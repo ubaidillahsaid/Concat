@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Jareer Abdullah and Concat contributors
 
+import { BeatMarker } from "beat-marker.slint";
 import { Wave } from "../primitives/wave.slint";
 import { Theme } from "../theme/theme.slint";
 import { Fmt, Payload } from "../util.slint";
@@ -154,6 +155,7 @@ component Clip inherits Rectangle {
     /// A fade knob dragged: the fade in (`out` false) or out, to `seconds`,
     /// while the drag lasts.
     callback fade-dragged(out: bool, seconds: float);
+    callback beat-edited(source-time: string, fraction: float, remove: bool);
     /// Window-space delta since the press: seconds across, pixels down. Not
     /// lanes down — the lanes differ in height, so which row a drag has
     /// reached is a question only the side holding the heights can answer.
@@ -436,39 +438,7 @@ component Clip inherits Rectangle {
             ramp-h: root.fade-h;
         }
 
-        // Place the dots just below the clip name so they remain visible
-        // even when the bottom of the audio lane is below the viewport.
-        for beat in root.item.beat-markers: Rectangle {
-            x: beat * parent.width - self.width / 2;
-            y: 0;
-            width: 9px;
-            height: parent.height;
 
-            Rectangle {
-                x: (parent.width - self.width) / 2;
-                y: 4px;
-                width: 4px;
-                height: Math.max(0px, parent.height - 4px);
-                background: #1b160f;
-            }
-            Rectangle {
-                x: (parent.width - self.width) / 2;
-                y: 4px;
-                width: 2px;
-                height: Math.max(0px, parent.height - 4px);
-                background: #ffd84d;
-            }
-            Rectangle {
-                x: 0;
-                y: 1px;
-                width: 9px;
-                height: 9px;
-                border-radius: 5px;
-                border-width: 1px;
-                border-color: #1b160f;
-                background: #ffd84d;
-            }
-        }
     }
 
     // ── header ───────────────────────────────────────────────────────────
@@ -1274,6 +1244,18 @@ component Clip inherits Rectangle {
             }
         }
     }
+    // After the clip and fade input layers, so the dot receives the press.
+    for marker in root.item.beat-markers: BeatMarker {
+        y: root.header-h;
+        height: root.body-h;
+        clip-width: root.width;
+        at: marker.at;
+        editable: !root.locked && root.tool == TimelineTool.select;
+        edited(fraction, remove) => {
+            root.beat-edited(marker.source-time, fraction, remove);
+        }
+    }
+
 }
 
 // ── the lanes ────────────────────────────────────────────────────────────────
@@ -1363,6 +1345,7 @@ export component Lanes inherits Rectangle {
     /// A clip's fade knob dragged: its fade in, or with `out` its fade out,
     /// to `seconds`.
     callback clip-fade(id: string, out: bool, seconds: float);
+    callback beat-edited(id: string, source-time: string, seconds: float, remove: bool);
     callback clip-dragged(seconds: float, pixels: length);
     callback clip-released();
     /// Right-click on a clip. The caller fills the menu and bumps `menu-token`;
@@ -1782,6 +1765,9 @@ export component Lanes inherits Rectangle {
             finger-let-go(id) => { return root.finger-up(id); }
             volume-dragged(gain) => { root.clip-volume(entry.id, gain); }
             fade-dragged(out, seconds) => { root.clip-fade(entry.id, out, seconds); }
+            beat-edited(source-time, fraction, remove) => {
+                root.beat-edited(entry.id, source-time, entry.start + fraction * entry.duration, remove);
+            }
             // The clip reports its delta from the press; a view that has
             // scrolled since then is added, so the clip stays under the
             // pointer while the edge scrolls it along.

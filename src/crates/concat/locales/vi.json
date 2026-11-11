@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Thêm mục đã chọn vào dòng thời gian",
   "studio.audioExported": "Đã xuất âm thanh vào {0} và thêm vào Phương tiện",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} kênh",
   "studio.clearBeats": "Clear Beat Markers",

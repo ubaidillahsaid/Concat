@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Добавить выбранное на таймлайн",
   "studio.audioExported": "Звук экспортирован в {0} и добавлен в Медиа",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "Каналов: {0}",
   "studio.clearBeats": "Clear Beat Markers",

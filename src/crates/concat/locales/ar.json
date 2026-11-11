@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "إضافة المحدّد إلى المخطط الزمني",
   "studio.audioExported": "تم تصدير الصوت إلى {0} وإضافته إلى الوسائط",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} قنوات",
   "studio.clearBeats": "Clear Beat Markers",

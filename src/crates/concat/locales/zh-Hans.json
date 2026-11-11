@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "将所选项添加到时间线",
   "studio.audioExported": "音频已导出到 {0}，并已添加到媒体",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} 个声道",
   "studio.clearBeats": "Clear Beat Markers",

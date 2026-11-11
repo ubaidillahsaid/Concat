@@ -89,6 +89,13 @@ export struct StripData {
 /// Positions are in *seconds*, not pixels. Zoom and pan are then a property
 /// change on the lanes and not a republish of the model — panning a timeline
 /// would otherwise rewrite every row of it on every frame of the drag.
+export struct BeatMarkerData {
+    /// Fraction of the clip width.
+    at: float,
+    /// Exact source time, used as the identity for edits.
+    source-time: string,
+}
+
 export struct ClipData {
     id: string,
     name: string,
@@ -123,7 +130,7 @@ export struct ClipData {
     /// width the clip currently has. Built once in Rust, where the peaks are.
     wave: string,
     /// Positions of detected beats as fractions of the clip width.
-    beat-markers: [float],
+    beat-markers: [BeatMarkerData],
     /// Where on the clip `wave` sits: its start and its length as fractions
     /// of the clip's, since only the window on screen is built.
     wave-from: float,

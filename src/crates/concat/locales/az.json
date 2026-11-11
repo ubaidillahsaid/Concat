@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Seçilənləri zaman xəttinə əlavə et",
   "studio.audioExported": "Səs {0} yerinə ixrac edildi və Mediaya əlavə olundu",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} kanal",
   "studio.clearBeats": "Clear Beat Markers",

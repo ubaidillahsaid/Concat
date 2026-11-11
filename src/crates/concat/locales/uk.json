@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Додати вибране на часову шкалу",
   "studio.audioExported": "Аудіо експортовано в {0} і додано в Медіа",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "Каналів: {0}",
   "studio.clearBeats": "Clear Beat Markers",

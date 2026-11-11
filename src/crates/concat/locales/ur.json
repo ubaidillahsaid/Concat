@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "منتخب کو ٹائم لائن میں شامل کریں",
   "studio.audioExported": "آڈیو {0} میں ایکسپورٹ ہو کر میڈیا میں شامل ہو گیا",
   "studio.beatDetectionFailed": "Could not analyse the audio for beats.",
+  "studio.beatMarkerTip": "Drag to move. Delete or right-click to remove this marker.",
   "studio.beatsFound": "{0} beats found in the source audio.",
   "studio.channels": "{0} چینلز",
   "studio.clearBeats": "Clear Beat Markers",

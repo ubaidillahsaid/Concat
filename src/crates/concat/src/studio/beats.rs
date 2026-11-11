@@ -11,7 +11,6 @@ type Source = (String, Option<u32>);
 
 #[derive(Default)]
 pub(super) struct Beats {
-    detected: HashMap<Source, Vec<f64>>,
     pending: HashSet<Source>,
 }
 
@@ -21,14 +20,17 @@ impl Studio {
             return None;
         }
         let media = self.project().media_by_id(&clip.media_id)?;
-        Some((media.path.clone(), clip.audio_stream))
+        Some((media.id.clone(), clip.audio_stream))
     }
 
     pub(super) fn beat_menu_state(&self, clip: &Clip) -> Option<(bool, bool)> {
         let source = self.beat_source(clip)?;
         Some((
             self.beats.pending.contains(&source),
-            self.beats.detected.contains_key(&source),
+            self.project()
+                .media_by_id(&source.0)
+                .and_then(|media| media.beat_markers(source.1))
+                .is_some(),
         ))
     }
 
@@ -36,28 +38,48 @@ impl Studio {
         let Some(source) = self.beat_source(clip) else {
             return;
         };
+        let Some(media) = self.project().media_by_id(&source.0) else {
+            return;
+        };
+        let path = media.path.clone();
+        let before = media.beat_markers(source.1);
         if !self.beats.pending.insert(source.clone()) {
             return;
         }
         self.notify(&t("studio.detectingBeats"), false);
         crate::host::spawn_in_project(
             move || {
-                let result = scan(&source.0, source.1);
-                (source, result)
+                let result = scan(&path, source.1);
+                (source, path, before, result)
             },
-            |studio, _, _, (source, result)| {
+            |studio, _, _, (source, path, before, result)| {
                 if !studio.beats.pending.remove(&source) {
                     return;
                 }
+                // Results for replaced media, or marks edited while a worker
+                // was running, cannot overwrite the current document.
+                let unchanged = studio
+                    .project()
+                    .media_by_id(&source.0)
+                    .is_some_and(|media| {
+                        media.path == path && media.beat_markers(source.1) == before
+                    });
+                if !unchanged {
+                    return;
+                }
                 match result {
-                    Ok(times) if times.is_empty() => {
-                        studio.beats.detected.remove(&source);
-                        studio.notify(&t("studio.noBeatsFound"), false);
-                    }
                     Ok(times) => {
                         let count = times.len();
-                        studio.beats.detected.insert(source, times);
-                        studio.notify(&tf("studio.beatsFound", &[&count]), false);
+                        studio.apply(Command::SetMediaBeatMarkers {
+                            media_id: source.0,
+                            stream: source.1,
+                            times: Some(times),
+                        });
+                        if count == 0 {
+                            studio.notify(&t("studio.noBeatsFound"), false);
+                        } else {
+                            studio.notify(&tf("studio.beatsFound", &[&count]), false);
+                        }
                     }
                     Err(error) => {
                         log::warn!("beat detection: {error}");
@@ -72,8 +94,41 @@ impl Studio {
         if let Some(source) = self.beat_source(clip)
             && !self.beats.pending.contains(&source)
         {
-            self.beats.detected.remove(&source);
+            self.apply(Command::SetMediaBeatMarkers {
+                media_id: source.0,
+                stream: source.1,
+                times: None,
+            });
         }
+    }
+
+    /// One release makes one undoable edit; previewing the drag stays in Slint.
+    pub fn edit_beat_marker(&mut self, id: &str, source_time: &str, seconds: f32, remove: bool) {
+        let Some(clip) = self.clip(id).cloned() else {
+            return;
+        };
+        if self.locked(&clip.track_id) {
+            return;
+        }
+        let Some(source) = self.beat_source(&clip) else {
+            return;
+        };
+        if self.beats.pending.contains(&source) {
+            return;
+        }
+        let Ok(from) = source_time.parse::<f64>() else {
+            return;
+        };
+        let rate = self.timeline().video.rate();
+        let latest = (clip.start + clip.duration - 1.0 / rate).max(clip.start);
+        let time = (f64::from(seconds) * rate).round() / rate;
+        let to = (!remove).then(|| source_at(&clip, time.clamp(clip.start, latest)));
+        self.apply(Command::EditMediaBeatMarker {
+            media_id: source.0,
+            stream: source.1,
+            from,
+            to,
+        });
     }
 
     fn selected_still_ids(&self) -> impl Iterator<Item = &str> {
@@ -133,18 +188,20 @@ impl Studio {
         }
     }
 
-    /// Each hit belongs to the recording. Trims, splits and retiming show
-    /// the part of that recording the clip actually uses.
-    pub(super) fn beat_times(
+    /// Source seconds mapped through this clip's current trim and speed.
+    fn beat_points(
         &self,
         clip: &Clip,
         window: Option<(f32, f32)>,
-    ) -> impl Iterator<Item = f32> + '_ {
-        let source = self.beat_source(clip);
-        let beats = source
-            .as_ref()
-            .and_then(|source| self.beats.detected.get(source))
-            .map_or(&[][..], Vec::as_slice);
+    ) -> impl Iterator<Item = (f32, f64)> {
+        let beats = self
+            .beat_source(clip)
+            .and_then(|source| {
+                self.project()
+                    .media_by_id(&source.0)?
+                    .beat_markers(source.1)
+            })
+            .unwrap_or_default();
         let start = clip.start;
         let duration = clip.duration;
         let source_start = clip.source_start;
@@ -152,62 +209,76 @@ impl Studio {
         let curve = clip
             .speed_curve
             .as_deref()
-            .filter(|_| !beats.is_empty())
             .and_then(concat_project::speed::curve_of);
         let (left, right) = window
             .map(|(left, right)| (f64::from(left), f64::from(right)))
             .unwrap_or((start, start + duration));
-        let source_at = |time: f64| {
-            let elapsed = (time - start).clamp(0.0, duration);
-            source_start
-                + curve.as_ref().map_or(elapsed * speed, |curve| {
-                    duration * curve.consumed(elapsed / duration)
-                })
-        };
-        let from = source_at(left);
-        let to = source_at(right);
-        let end = source_at(start + duration);
-        let first = beats.partition_point(|time| *time <= source_start || *time < from);
+        let from = source_at(clip, left);
+        let to = source_at(clip, right);
+        let end = source_at(clip, start + duration);
+        let first = beats.partition_point(|time| *time < source_start || *time < from);
         let last = beats
             .partition_point(|time| *time < end && *time <= to)
             .max(first);
-
-        beats[first..last].iter().map(move |&time| {
-            let offset = time - source_start;
-            let elapsed = if let Some(curve) = &curve {
-                let (mut lo, mut hi) = (0.0, 1.0);
-                for _ in 0..24 {
-                    let mid = (lo + hi) * 0.5;
-                    if duration * curve.consumed(mid) < offset {
-                        lo = mid;
-                    } else {
-                        hi = mid;
+        beats
+            .into_iter()
+            .skip(first)
+            .take(last - first)
+            .map(move |time| {
+                let offset = time - source_start;
+                let elapsed = if let Some(curve) = &curve {
+                    let (mut lo, mut hi) = (0.0, 1.0);
+                    for _ in 0..24 {
+                        let mid = (lo + hi) * 0.5;
+                        if duration * curve.consumed(mid) < offset {
+                            lo = mid;
+                        } else {
+                            hi = mid;
+                        }
                     }
-                }
-                duration * (lo + hi) * 0.5
-            } else {
-                offset / speed
-            };
-            (start + elapsed) as f32
-        })
+                    duration * (lo + hi) * 0.5
+                } else {
+                    offset / speed
+                };
+                ((start + elapsed) as f32, time)
+            })
     }
 
-    /// Marker positions as fractions of the clip width. At wide zoom
-    /// levels only draw marks with room for a dot; all beats still snap.
-    pub(super) fn beat_markers(&self, clip: &Clip, span: Option<(f32, f32)>) -> Vec<f32> {
+    pub(super) fn beat_times(
+        &self,
+        clip: &Clip,
+        window: Option<(f32, f32)>,
+    ) -> impl Iterator<Item = f32> {
+        self.beat_points(clip, window).map(|(time, _)| time)
+    }
+
+    /// Each visible mark carries its exact source instant for editing.
+    pub(super) fn beat_markers(
+        &self,
+        clip: &Clip,
+        span: Option<(f32, f32)>,
+    ) -> Vec<BeatMarkerData> {
         let start = clip.start as f32;
         let duration = clip.duration as f32;
-        let spacing = 10.0 * self.lanes.seconds_per_pixel;
-        let mut markers = Vec::new();
-        let mut last = f32::NEG_INFINITY;
-        for time in self.beat_times(clip, span) {
-            if time - last >= spacing {
-                markers.push((time - start) / duration);
-                last = time;
-            }
-        }
-        markers
+        self.beat_points(clip, span)
+            .map(|(time, source)| BeatMarkerData {
+                at: (time - start) / duration,
+                source_time: source.to_string().into(),
+            })
+            .collect()
     }
+}
+
+fn source_at(clip: &Clip, timeline_time: f64) -> f64 {
+    let elapsed = (timeline_time - clip.start).clamp(0.0, clip.duration);
+    let curve = clip
+        .speed_curve
+        .as_deref()
+        .and_then(concat_project::speed::curve_of);
+    clip.source_start
+        + curve.map_or(elapsed * clip.speed, |curve| {
+            clip.duration * curve.consumed(elapsed / clip.duration)
+        })
 }
 
 fn scan(path: &str, stream: Option<u32>) -> concat_media::error::Result<Vec<f64>> {

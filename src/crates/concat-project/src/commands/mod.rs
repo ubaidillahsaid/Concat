@@ -270,6 +270,26 @@ pub enum Command {
         /// The probed file, as described by the host.
         item: NewMedia,
     },
+    /// Stores detected or edited beat positions in source seconds.
+    SetMediaBeatMarkers {
+        /// The recording in the bin.
+        media_id: String,
+        /// Its chosen audio stream, or the default stream.
+        stream: Option<u32>,
+        /// None resets detection; an empty list keeps an intentionally empty set.
+        times: Option<Vec<f64>>,
+    },
+    /// Moves one beat, or deletes it when no destination is supplied.
+    EditMediaBeatMarker {
+        /// The recording in the bin.
+        media_id: String,
+        /// Its chosen audio stream.
+        stream: Option<u32>,
+        /// The exact source instant, also identifying the marker.
+        from: f64,
+        /// New source seconds; None deletes this marker.
+        to: Option<f64>,
+    },
     /// Removes a bin item and every clip referencing it, on *all* timelines
     /// - a clip whose media is gone would linger as a dead reference.
     RemoveMedia {
@@ -979,6 +999,9 @@ pub enum CommandError {
     /// A timed still sequence needs images and increasing cut times.
     #[error("The photo sequence needs images and valid cut times.")]
     InvalidStillSequence,
+    /// A marker edit supplied an invalid or duplicate source time.
+    #[error("That beat marker position is invalid or already occupied.")]
+    InvalidBeatMarker,
     /// A clip-placing command named a track no longer on the timeline.
     #[error("That track no longer exists.")]
     TrackGone,
@@ -1125,6 +1148,8 @@ impl Command {
             | Command::AddClipAtFirstFree { start, .. }
             | Command::AddClipsInSequence { start, .. } => bad([*start]),
             Command::AddStillsAtCuts { boundaries, .. } => bad(boundaries.iter().copied()),
+            Command::SetMediaBeatMarkers { times, .. } => bad(times.iter().flatten().copied()),
+            Command::EditMediaBeatMarker { from, to, .. } => bad([*from]) || bad(*to),
             Command::AddShapeClip {
                 start,
                 duration,
@@ -1316,6 +1341,8 @@ pub fn apply(
         }
 
         command @ (Command::AddMedia { .. }
+        | Command::SetMediaBeatMarkers { .. }
+        | Command::EditMediaBeatMarker { .. }
         | Command::SetMediaPlaceholder { .. }
         | Command::FillSlot { .. }
         | Command::RemoveMedia { .. }

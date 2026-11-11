@@ -795,6 +795,105 @@ mod tests {
         assert!(serde_json::from_value::<Command>(wire).is_err());
     }
 
+    #[test]
+    fn beat_marker_edits_persist_across_save_and_reopen_and_undo() {
+        let (mut editor, media_id, _) = fixture();
+        editor
+            .apply(Command::SetMediaBeatMarkers {
+                media_id: media_id.clone(),
+                stream: None,
+                times: Some(vec![1.0, 2.0, 3.0]),
+            })
+            .unwrap();
+        editor
+            .apply(Command::SetMediaBeatMarkers {
+                media_id: media_id.clone(),
+                stream: Some(2),
+                times: Some(vec![1.5]),
+            })
+            .unwrap();
+        editor
+            .apply(Command::EditMediaBeatMarker {
+                media_id: media_id.clone(),
+                stream: None,
+                from: 2.0,
+                to: Some(2.25),
+            })
+            .unwrap();
+        editor
+            .apply(Command::EditMediaBeatMarker {
+                media_id: media_id.clone(),
+                stream: None,
+                from: 1.0,
+                to: None,
+            })
+            .unwrap();
+        let document = editor.to_document(&settings());
+        let mut reopened = Editor::from_document(&document).unwrap();
+        let marks = |editor: &Editor, stream| {
+            editor
+                .project()
+                .media_by_id(&media_id)
+                .unwrap()
+                .beat_markers(stream)
+        };
+        assert_eq!(marks(&reopened, None), Some(vec![2.25, 3.0]));
+        assert_eq!(marks(&reopened, Some(2)), Some(vec![1.5]));
+        reopened
+            .apply(Command::EditMediaBeatMarker {
+                media_id: media_id.clone(),
+                stream: None,
+                from: 2.25,
+                to: Some(3.5),
+            })
+            .unwrap();
+        assert_eq!(marks(&reopened, None), Some(vec![3.0, 3.5]));
+        assert!(reopened.undo());
+        assert_eq!(marks(&reopened, None), Some(vec![2.25, 3.0]));
+        assert!(reopened.redo());
+        assert_eq!(marks(&reopened, None), Some(vec![3.0, 3.5]));
+        assert!(
+            !reopened
+                .apply(Command::EditMediaBeatMarker {
+                    media_id: media_id.clone(),
+                    stream: None,
+                    from: 2.25,
+                    to: None,
+                })
+                .unwrap()
+                .applied,
+            "a stale handle cannot delete a neighbour"
+        );
+        assert!(
+            reopened
+                .apply(Command::SetMediaBeatMarkers {
+                    media_id: media_id.clone(),
+                    stream: None,
+                    times: Some(vec![f64::NAN]),
+                })
+                .is_err()
+        );
+        reopened
+            .apply(Command::EditMediaBeatMarker {
+                media_id: media_id.clone(),
+                stream: None,
+                from: 3.0,
+                to: None,
+            })
+            .unwrap();
+        reopened
+            .apply(Command::EditMediaBeatMarker {
+                media_id: media_id.clone(),
+                stream: None,
+                from: 3.5,
+                to: None,
+            })
+            .unwrap();
+        let reopened = Editor::from_document(&reopened.to_document(&settings())).unwrap();
+        assert_eq!(marks(&reopened, None), Some(vec![]));
+        assert_eq!(marks(&reopened, Some(2)), Some(vec![1.5]));
+    }
+
     /// Editor with one media item and one clip at [0, 10) on track one.
     fn fixture() -> (Editor, String, String) {
         let mut editor = Editor::new();

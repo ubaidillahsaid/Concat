@@ -689,6 +689,7 @@
   "studio.addSelectedToTimeline": "Tambahkan pilihan ke linimasa",
   "studio.audioExported": "Audio diekspor ke {0} dan ditambahkan ke Media",
   "studio.beatDetectionFailed": "Audio tidak bisa dianalisis untuk mendeteksi ketukan.",
+  "studio.beatMarkerTip": "Geser marker. Delete atau klik kanan untuk menghapus satu marker.",
   "studio.beatsFound": "{0} ketukan ditemukan pada audio sumber.",
   "studio.channels": "{0} kanal",
   "studio.clearBeats": "Hapus Penanda Ketukan",
